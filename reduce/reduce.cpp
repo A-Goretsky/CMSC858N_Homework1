@@ -36,8 +36,9 @@ int main(int argc, char* argv[]) {
   double total_time = 0;
   for (int i = 0; i <= num_rounds; i++) {
     parlay::timer t;
-    long long ans = reduce(A, n);
+    //long long ans = reduce(A, n);
     //long long ans = serial_reduce(A, n);
+    long long ans = granular_reduce(A, n, 100000000);
     t.stop();
 
     if (i == 0) {

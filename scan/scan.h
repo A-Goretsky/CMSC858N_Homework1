@@ -25,5 +25,52 @@ T scan_inplace_serial(T *A, size_t n, const F& f, T id) {
 // Depth = O(\log(n))
 template <class T, class F>
 T scan_inplace(T *A, size_t n, const F& f, T id) {
-  return id;  // TODO
+  T* L = (T*) malloc(n * sizeof(T));
+  size_t sum = scan_up(A, n, L, f);
+  scan_down(A, n, L, f, id);
+  free(L);
+  return sum;  // TODO
+}
+
+template <class T, class F>
+T scan_up(T *A, size_t n, T *L, const F& f) {
+
+  if (n == 1) {
+    return A[0];
+  }
+  auto middle = n / 2 + (n % 2 != 0);
+  T l, r;
+  auto f1 = [&]()
+  { l = scan_up(A, middle, L, f); };
+  auto f2 = [&]()
+  { r = scan_up(A + middle, n - middle, L + middle, f); };
+  par_do(f1, f2);
+  L[middle - 1] = l;
+  return f(l, r);
+}
+
+  //T v1, v2;
+  //auto f1 = [&]()
+  //{ v1 = granular_reduce(A, n / 2, threshold); };
+  //auto f2 = [&]()
+  //{ v2 = granular_reduce(A + n / 2, n - n / 2, threshold); };
+  //par_do(f1, f2);
+  //return v1 + v2;
+
+template <class T, class F>
+void scan_down(T *R, size_t n, T *L, const F& f, T s) {
+  if (n == 1) {
+    R[0] = s;
+    return;
+  }
+  else {
+    auto middle = n / 2 + (n % 2 != 0);
+    auto f_call = f(s, L[middle - 1]);
+    auto f1 = [&]()
+    { scan_down(R, middle, L, f, s); };
+    auto f2 = [&]()
+    { scan_down(R + middle, n - middle, L + middle, f, f_call); };
+    par_do(f1, f2);
+    return;
+  }
 }
